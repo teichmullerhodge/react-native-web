@@ -5,8 +5,57 @@ import colors from '../assets/colors.js';
 import Ionicons from 'react-native-vector-icons/Ionicons';  
 import MessageContent from '../components/MessageContent.js';
 
-
 const Messages = ({nav}) => {
+
+
+    const [messages, setMessages] = useState([]);
+    const [inputText, setInputText] = useState('');
+
+
+    const handleSubmit = async () => {
+        
+        await addMessage(inputText, true);
+        setInputText('');
+        await promptGtp(inputText);
+
+    }
+    const addMessage = (message, isUser) => {
+        const newMessage = {
+
+            message:  message,
+            date: new Date().toLocaleDateString(),
+            isUser: isUser
+
+        };
+
+        setMessages(prevMessages => [...prevMessages, newMessage]);
+    }
+
+
+    const promptGtp = async (userPrompt) => {
+
+
+        const apiKey = ''; //haha.
+        const apiUrl = 'https://api.openai.com/v1/chat/completions'; 
+
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+                model: "gpt-3.5-turbo",
+                messages: [{ role: "user", content: userPrompt }],
+                max_tokens: 1200, 
+                temperature: 0.7
+            })
+        });
+        
+        const data = await response.json();
+        await addMessage(data.choices[0].message.content, false);
+
+    };
 
   return (
     <View style={messageStyles.container}>
@@ -34,29 +83,32 @@ const Messages = ({nav}) => {
 
         <SafeAreaView style={messageStyles.chatContainer}>
             <ScrollView style={messageStyles.scrollableContainer}>
-                <MessageContent message="Lorem ipsum dolor sit amet. Nulla at risus" date="26/09/2024" isUser={true}></MessageContent>
-                <MessageContent message="Lorem ipsum dolor sit amet. Nulla at risus" date="26/09/2024"></MessageContent>
-                <MessageContent message="Lorem ipsum dolor sit amet. Nulla at risus" date="26/09/2024" isUser={true}></MessageContent>
-                <MessageContent message="Lorem ipsum dolor sit amet. Nulla at risus" date="26/09/2024"></MessageContent>
-                <MessageContent message="Lorem ipsum dolor sit amet. Nulla at risus" date="26/09/2024" isUser={true}></MessageContent>
-                <MessageContent message="Lorem ipsum dolor sit amet. Nulla at risus" date="26/09/2024"></MessageContent>
-                <MessageContent message="Lorem ipsum dolor sit amet. Nulla at risus" date="26/09/2024" isUser={true}></MessageContent>
-                <MessageContent message="Lorem ipsum dolor sit amet. Nulla at risus" date="26/09/2024"></MessageContent>
-                <MessageContent message="Lorem ipsum dolor sit amet. Nulla at risus" date="26/09/2024" isUser={true}></MessageContent>
+                {messages.map((msg, index) => (
+                    <MessageContent 
+                        key={index}
+                        message={msg.message}
+                        date={msg.date}
+                        isUser={msg.isUser} 
+                    />
+                ))}
             </ScrollView>
         </SafeAreaView>
-        <View style={messageStyles.inputOutlineContainer}>
+        <ScrollView style={messageStyles.inputOutlineContainer}>
            <View style={messageStyles.inputContainer}>
                 <TouchableOpacity style={messageStyles.sendFileButton}>
                     <Ionicons name="camera-outline" size={24} style={messageStyles.sendFiles} />   
                 </TouchableOpacity>
-                <TextInput style={messageStyles.userInput} placeholder='Digite sua mensagem'>
-                </TextInput>
-                <TouchableOpacity style={messageStyles.sendMessageButton}>
+                <TextInput 
+                    style={messageStyles.userInput} 
+                    placeholder='Digite sua mensagem'
+                    value={inputText}
+                    onChangeText={setInputText}
+                />
+                <TouchableOpacity style={messageStyles.sendMessageButton} onPress={handleSubmit}>
                     <Ionicons name="paper-plane-outline" size={24} style={messageStyles.sendMessage}/>   
                 </TouchableOpacity>
             </View>
-        </View>
+        </ScrollView>
 
     </View>
 );
