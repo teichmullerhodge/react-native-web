@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Platform  } from 'react-native';
+import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Platform, SafeAreaView, ScrollView  } from 'react-native';
 import colors from '../assets/colors.js';
 import ChatDisplay from '../components/ChatDisplay.js';
 
@@ -21,21 +21,32 @@ const SampleLayout = ({nav}) => {
                     <Text style={chatStyles.buttonText}>Todos</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={chatStyles.defaultButton}  onPress={() => nav('Login')}>
-                    <Text style={chatStyles.buttonText}>Em atendimento</Text>
+                    <Text style={chatStyles.buttonText}>Atendendo</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={chatStyles.defaultButton}  onPress={() => nav('Login')}>
                     <Text style={chatStyles.buttonText}>Em espera</Text>
                 </TouchableOpacity>
             </View>
         </View>
-        <View style={chatStyles.chatsContainer}>
-            <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
-            <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
-            <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
-            <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
-            <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
-            <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
-        </View>
+        <SafeAreaView style={chatStyles.chatsContainer}>
+            <ScrollView style={chatStyles.scrollableContainer}>
+
+                <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
+                <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
+                <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
+                <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
+                <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
+                <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
+                <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
+                <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
+                <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
+                <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
+                <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
+                <ChatDisplay contactName="Sunhub" nav={nav}></ChatDisplay>
+
+            </ScrollView>
+
+        </SafeAreaView>
     </View>
   )
   
@@ -63,7 +74,7 @@ const chatStyles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        width: '100%',
+        width: '90%',
         marginTop: 30,
 
 
@@ -90,6 +101,8 @@ const chatStyles = StyleSheet.create({
     filterButtonsContainer: {
         flexDirection: 'row',
         width: '100%',
+        justifyContent: 'space-around',
+        alignItems: 'center',
  
     },
     buttonText: {
@@ -103,22 +116,24 @@ const chatStyles = StyleSheet.create({
     },
     defaultButton: {
 
-        width: '33%',
         padding: 8,
         borderRadius: 6,
         marginTop: 10,
         borderWidth: 1,
         borderColor: colors.dreamSmoke,
-        height: '60%'
+        backgroundColor: colors.dreamSmoke,
+        marginLeft: 5,
       },
 
     chatsContainer: {
+        marginTop: 10,
         flex: 1,
         height: '100%',
         width: '100%',
 
-      }
-    
+      },
+
+
 })
 
 

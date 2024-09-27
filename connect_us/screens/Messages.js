@@ -1,20 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Platform, SafeAreaView, ScrollView  } from 'react-native';
+import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Platform, SafeAreaView, ScrollView, KeyboardAvoidingView, Keyboard, Dimensions} from 'react-native';
 import colors from '../assets/colors.js';
 import Ionicons from 'react-native-vector-icons/Ionicons';  
 import MessageContent from '../components/MessageContent.js';
+import WebMessages from './WebChat.js';
+
 
 const Messages = ({nav}) => {
 
+    const scrollViewRef = useRef(null);
 
-    const [messages, setMessages] = useState([]);
+    const sampleMessages = [
+        {
+            message: 'Hi!',
+            date: new Date().toLocaleDateString(),
+            isUser: true,
+        },
+        {
+            message: 'Hello! How are you user?',
+            date: new Date().toLocaleDateString(),
+            isUser: false,
+        },
+        {
+            message: 'Good, how about you?',
+            date: new Date().toLocaleDateString(),
+            isUser: true,
+        },
+        {
+            message: "I'm fine, thanks for asking! Now i'm testing my app, i like react-native, is way better than flutter.",
+            date: new Date().toLocaleDateString(),
+            isUser: false,
+        },
+        {
+            message: 'Wow, what a coincidence. I also think that react-native is way better than flutter. Except for those quirks.',
+            date: new Date().toLocaleDateString(),
+            isUser: true,
+        },
+
+
+
+    ]
+
+    const [messages, setMessages] = useState(sampleMessages);
     const [inputText, setInputText] = useState('');
+    const [isFocused, setIsFocused] = useState(false); //to handle the keyboard.
 
 
     const handleSubmit = async () => {
         
-        await addMessage(inputText, true);
+        addMessage(inputText, true);
         setInputText('');
         await promptGtp(inputText);
 
@@ -35,7 +70,7 @@ const Messages = ({nav}) => {
     const promptGtp = async (userPrompt) => {
 
 
-        const apiKey = ''; //haha.
+        const apiKey = 'YOUR_API_KEY';        
         const apiUrl = 'https://api.openai.com/v1/chat/completions'; 
 
         const response = await fetch(apiUrl, {
@@ -57,8 +92,13 @@ const Messages = ({nav}) => {
 
     };
 
-  return (
-    <View style={messageStyles.container}>
+  return Platform.OS !== 'web' ? (
+
+    <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={messageStyles.container}
+    >
+
         <View style={messageStyles.chatHeader}>
             <View style={messageStyles.profileHeader}>
                 <Image 
@@ -82,7 +122,12 @@ const Messages = ({nav}) => {
         </View>
 
         <SafeAreaView style={messageStyles.chatContainer}>
-            <ScrollView style={messageStyles.scrollableContainer}>
+            <ScrollView style={messageStyles.scrollableContainer}
+                ref={scrollViewRef} 
+                onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })}
+                keyboardShouldPersistTaps='handled' // ou 'always'
+
+                >
                 {messages.map((msg, index) => (
                     <MessageContent 
                         key={index}
@@ -93,25 +138,40 @@ const Messages = ({nav}) => {
                 ))}
             </ScrollView>
         </SafeAreaView>
-        <ScrollView style={messageStyles.inputOutlineContainer}>
+        <ScrollView style={[messageStyles.inputOutlineContainer, { bottom: isFocused ? 250 : 0 }]} keyboardShouldPersistTaps='handled'>
            <View style={messageStyles.inputContainer}>
                 <TouchableOpacity style={messageStyles.sendFileButton}>
                     <Ionicons name="camera-outline" size={24} style={messageStyles.sendFiles} />   
                 </TouchableOpacity>
-                <TextInput 
-                    style={messageStyles.userInput} 
-                    placeholder='Digite sua mensagem'
-                    value={inputText}
-                    onChangeText={setInputText}
-                />
+                    <ScrollView style={messageStyles.userMessageContainer}>
+                        <TextInput 
+                        style={messageStyles.userInput} 
+                        placeholder='Digite sua mensagem'
+                        value={inputText}
+                        onChangeText={setInputText}
+                        multiline={true}
+                        onFocus={() => { 
+                            setIsFocused(true);
+                            // Usar setTimeout para garantir que a rolagem ocorra após o teclado abrir
+                            setTimeout(() => {
+                                if (scrollViewRef.current) {
+                                    scrollViewRef.current.scrollToEnd({ animated: true });
+                                }
+                            }, 100); // Delay de 100ms, ajuste se necessário
+                        }} 
+                        onBlur={() => setIsFocused(false)} 
+
+                        />
+                    </ScrollView>
+
                 <TouchableOpacity style={messageStyles.sendMessageButton} onPress={handleSubmit}>
                     <Ionicons name="paper-plane-outline" size={24} style={messageStyles.sendMessage}/>   
                 </TouchableOpacity>
             </View>
-        </ScrollView>
+         </ScrollView>
+         </KeyboardAvoidingView>
 
-    </View>
-);
+) : <WebMessages nav={nav}></WebMessages>;
   
 }
  
@@ -182,34 +242,37 @@ const messageStyles = StyleSheet.create({
         },
         chatContainer: {
 
-            height: '85%',
+            height: '95%',
+
         },
 
         scrollableContainer: {
             marginTop: 60,
             height: '100%',
+            marginBottom: 60,
+
         },
 
         inputOutlineContainer: {
-
+            marginTop: 100,
             backgroundColor: colors.pureWhite,
-            padding: 16,
-            flex: 1,
-        },
+            position: 'absolute',
+            bottom: 0, // Alinha na parte inferior
+            left: 0, // Alinha à esquerda (ou ajuste conforme necessário)
+            right: 0, // Alinha à direita (ou ajuste conforme necessário)
+        },  
 
         inputContainer: {
 
-            flex: 1,
+            flex: 0.1,
             flexDirection: 'row',
             padding: 8,
-            zIndex: 2,
-            height: '50%',
             justifyContent: 'center',
             alignItems: 'center',
             backgroundColor: colors.dreamSmoke,
             borderRadius: 16,
-        },
 
+        },
         inputButton: {
 
             backgroundColor: colors.dreamSmoke,
@@ -232,7 +295,7 @@ const messageStyles = StyleSheet.create({
             backgroundColor: colors.dreamFadeBlue,
             padding: 6,
             borderRadius: 8,
-
+            zIndex: 2,
         },
 
         sendMessage: {

@@ -35,6 +35,8 @@ const displayStyles = StyleSheet.create({
         width: '100%',
         padding: 6,
         marginLeft: 10,
+        marginTop: 10,
+
     },
 
     userImage: {
@@ -50,7 +52,7 @@ const displayStyles = StyleSheet.create({
 
         flex: 1,
         flexDirection: 'column',
-        marginLeft: 5
+        marginLeft: 5,
     },
 
     contactNameStyles: {
